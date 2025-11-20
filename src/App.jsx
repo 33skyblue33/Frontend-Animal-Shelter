@@ -6,10 +6,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { MainLayout } from './layout/MainLayout';
 import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage'; // <--- 1. IMPORT TUTAJ
 import { PetsPage } from './pages/PetsPage';
 import { AdoptionRequestsPage } from './pages/AdoptionRequestsPage';
 
+// Prosty komponent chroniący trasy
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" />;
@@ -23,8 +23,9 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Navigate to="/pets" />} />
             <Route path="login" element={<LoginPage />} />
-            <Route path="register" element={<RegisterPage />} /> {/* <--- 2. TRASA TUTAJ */}
+            {/* Tutaj dodaj RegisterPage analogicznie do LoginPage */}
             
+            {/* Trasy chronione */}
             <Route 
               path="pets" 
               element={
