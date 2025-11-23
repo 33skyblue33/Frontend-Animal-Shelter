@@ -22,3 +22,8 @@ export const AdoptionService = {
 export const BreedService = {
   getAll: () => apiClient.get('/breeds'),
 };
+
+export const DotationService = {
+  getAll: () => apiClient.get('/dotation'),
+  create: (data) => apiClient.post('/dotation', data),
+};

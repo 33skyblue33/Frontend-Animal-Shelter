@@ -9,7 +9,7 @@ const PageHeader = styled(Typography)(({ theme }) => ({
 
 const StatusChip = styled(Chip)(({ status, theme }) => {
   let color = theme.palette.default;
-  if (status === 1) color = theme.palette.success.main; // Zakładając enum: 0-Pending, 1-Approved, etc.
+  if (status === 1) color = theme.palette.success.main; 
   if (status === 2) color = theme.palette.error.main;
   
   return {
@@ -59,7 +59,6 @@ export const AdoptionRequestsPage = () => {
                 <TableCell>{formatDate(row.requestDate)}</TableCell>
                 <TableCell>{row.petId}</TableCell>
                 <TableCell>
-                   {/* Status jest zwracany jako enum/int z API, warto zmapować go na tekst */}
                   <StatusChip label={`Status: ${row.status}`} status={row.status} size="small" />
                 </TableCell>
                 <TableCell>

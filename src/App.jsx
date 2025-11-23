@@ -9,7 +9,6 @@ import { LoginPage } from './pages/LoginPage';
 import { PetsPage } from './pages/PetsPage';
 import { AdoptionRequestsPage } from './pages/AdoptionRequestsPage';
 
-// Prosty komponent chroniący trasy
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" />;
@@ -23,9 +22,6 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Navigate to="/pets" />} />
             <Route path="login" element={<LoginPage />} />
-            {/* Tutaj dodaj RegisterPage analogicznie do LoginPage */}
-            
-            {/* Trasy chronione */}
             <Route 
               path="pets" 
               element={

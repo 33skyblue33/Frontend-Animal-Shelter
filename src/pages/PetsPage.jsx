@@ -1,92 +1,227 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, CardActions, Button, Chip } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { PetService, AdoptionService } from '../api/services';
+import { Grid, Card, CardMedia, CardContent, Typography, CardActions, Button, Box } from '@mui/material';
+import { styled, useTheme } from '@mui/material/styles';
+import { PetService, AdoptionService, BreedService } from '../api/services'; 
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import PetsIcon from '@mui/icons-material/Pets';
 
-// --- Styled Components ---
-const PetCard = styled(Card)({
+
+
+const HeroSection = styled(Box)(({ theme }) => ({
+  textAlign: 'center',
+  marginBottom: theme.spacing(6),
+}));
+
+const FilterButton = styled(Button)(({ theme, active }) => ({
+  marginRight: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+  backgroundColor: active ? theme.palette.primary.main : '#fff',
+  color: active ? '#fff' : theme.palette.text.primary,
+  border: '2px solid',
+  borderColor: active ? theme.palette.primary.main : '#E0E0E0',
+  borderRadius: 50,
+  fontWeight: 700,
+  textTransform: 'none',
+  '&:hover': {
+    backgroundColor: active ? theme.palette.primary.dark : '#F5F5F5',
+  }
+}));
+
+const StyledCard = styled(Card)(({ bgcolor }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
+  backgroundColor: bgcolor,
+  borderRadius: 30,
+  padding: 12,
+  boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+  transition: 'transform 0.2s',
+  '&:hover': {
+    transform: 'scale(1.02)',
+  }
+}));
+
+
+const ImageContainer = styled(Box)({
+  backgroundColor: '#fff',
+  borderRadius: 20,
+  overflow: 'hidden',
+  height: 180, 
+  position: 'relative',
+  border: '4px solid rgba(255,255,255,0.5)'
 });
 
-const PetMedia = styled(CardMedia)({
-  height: 200,
-  backgroundColor: '#f0f0f0', // Placeholder color
+const StyledMedia = styled(CardMedia)({
+  height: '100%',
+  objectFit: 'cover',
 });
 
-const PetContent = styled(CardContent)({
+const ContentBox = styled(CardContent)({
+  textAlign: 'center',
+  color: '#2D3436',
+  paddingTop: 10,
+  paddingBottom: 0,
   flexGrow: 1,
 });
 
-const PetAttributeChip = styled(Chip)(({ theme }) => ({
-  marginRight: theme.spacing(1),
-  marginTop: theme.spacing(1),
+const PetName = styled(Typography)({
+  fontFamily: "'Fredoka', sans-serif",
+  fontWeight: 700,
+  fontSize: '1.6rem',
+  marginBottom: 2,
+  lineHeight: 1.2
+});
+
+const AdoptButton = styled(Button)(({ theme }) => ({
+  backgroundColor: '#FFC048',
+  color: '#2D3436',
+  width: '100%',
+  fontWeight: 800,
+  fontSize: '1.1rem',
+  marginTop: 10,
+  borderRadius: 15,
+  '&:hover': {
+    backgroundColor: '#FFA801',
+  }
 }));
 
-// --- Component ---
 export const PetsPage = () => {
   const [pets, setPets] = useState([]);
+  const [breeds, setBreeds] = useState([]); 
+  const [selectedBreedId, setSelectedBreedId] = useState(0); 
+  
   const { user } = useAuth();
+  const theme = useTheme();
+
+  const cardColors = [
+    theme.palette.custom.cardOrange,
+    theme.palette.custom.cardBlue,
+    theme.palette.custom.cardGreen,
+    theme.palette.custom.cardRed,
+  ];
+
 
   useEffect(() => {
-    loadPets();
+    const loadData = async () => {
+      try {
+      
+        const [petsResponse, breedsResponse] = await Promise.all([
+          PetService.getAll(),
+          BreedService.getAll()
+        ]);
+        
+        setPets(petsResponse.data);
+        setBreeds(breedsResponse.data);
+      } catch (error) {
+        console.error("Błąd pobierania danych", error);
+        toast.error("Nie udało się pobrać danych.");
+      }
+    };
+
+    loadData();
   }, []);
 
-  const loadPets = async () => {
+  const handleAdopt = async (petId) => {
+    if (!user) {
+      toast.info("Zaloguj się, aby adoptować pieska!");
+      return;
+    }
     try {
-      const response = await PetService.getAll();
-      setPets(response.data);
+      await AdoptionService.create({ userId: user.id, petId: petId });
+      toast.success("Wysłano prośbę o adopcję! 🐶");
     } catch (error) {
-      console.error("Failed to load pets", error);
+      toast.error("Błąd wysyłania prośby.");
     }
   };
 
-  const handleAdopt = async (petId) => {
-    if (!user) return;
-    try {
-      await AdoptionService.create({
-        userId: user.id,
-        petId: petId
-      });
-      toast.success("Wysłano prośbę o adopcję!");
-    } catch (error) {
-      toast.error("Błąd podczas wysyłania prośby.");
-    }
-  };
+
+  const filteredPets = selectedBreedId === 0
+    ? pets 
+    : pets.filter(pet => pet.breedId === selectedBreedId);
 
   return (
-    <Grid container spacing={4}>
-      {pets.map((pet) => (
-        <Grid item key={pet.id} xs={12} sm={6} md={4}>
-          <PetCard>
-            <PetMedia
-              image={pet.imageUrl || 'https://via.placeholder.com/200?text=No+Image'}
-              title={pet.name}
-            />
-            <PetContent>
-              <Typography gutterBottom variant="h5" component="h2">
-                {pet.name}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" component="p">
-                {pet.description}
-              </Typography>
-              
-              <div>
-                <PetAttributeChip label={`Wiek: ${pet.age}`} size="small" />
-                <PetAttributeChip label={`Kolor: ${pet.color}`} size="small" />
-              </div>
-            </PetContent>
-            <CardActions>
-              <Button size="small" color="primary" onClick={() => handleAdopt(pet.id)}>
-                Adoptuj
-              </Button>
-            </CardActions>
-          </PetCard>
-        </Grid>
-      ))}
-    </Grid>
+    <div>
+      <HeroSection>
+        <Typography variant="h3" style={{ color: '#2D3436', marginBottom: 10, fontWeight: 700 }}>
+          Znajdź swojego Psa! 🐶
+        </Typography>
+        <Typography variant="h6" color="textSecondary" style={{ fontFamily: "'Fredoka', sans-serif" }}>
+          Wierne psiaki czekają na nowy dom
+        </Typography>
+      </HeroSection>
+
+   
+      <Box mb={4} display="flex" justifyContent="center" flexWrap="wrap" alignItems="center">
+        <Typography variant="h6" style={{ marginRight: 15, fontWeight: 600, color: '#555' }}>
+          Rasa:
+        </Typography>
+        
+      
+        <FilterButton 
+          active={selectedBreedId === 0 ? 1 : 0}
+          onClick={() => setSelectedBreedId(0)}
+        >
+          Wszystkie
+        </FilterButton>
+
+      
+        {breeds.map((breed) => (
+          <FilterButton 
+            key={breed.id} 
+            active={selectedBreedId === breed.id ? 1 : 0}
+            onClick={() => setSelectedBreedId(breed.id)}
+          >
+            {breed.name}
+          </FilterButton>
+        ))}
+      </Box>
+
+      <Grid container spacing={4}>
+        {filteredPets.map((pet, index) => {
+          const bgColor = cardColors[index % cardColors.length];
+
+          return (
+            <Grid item key={pet.id} xs={12} sm={12} md={6} lg={4}>
+              <StyledCard bgcolor={bgColor}>
+                <ImageContainer>
+                  <StyledMedia
+                    image={pet.imageUrl || `https://placedog.net/600/400?id=${pet.id}`}
+                    title={pet.name}
+                  />
+                  
+                  <Box position="absolute" top={10} right={10} bgcolor="rgba(255,255,255,0.95)" borderRadius={20} padding="4px 10px" display="flex" alignItems="center">
+                     <PetsIcon style={{ color: '#4FD1C5', fontSize: 18, marginRight: 4 }} />
+                     <Typography variant="caption" fontWeight="bold" color="textPrimary">Do wzięcia</Typography>
+                  </Box>
+                </ImageContainer>
+                
+                <ContentBox>
+                  <PetName>{pet.name}</PetName>
+                  <Typography variant="body2" style={{ opacity: 0.8, fontWeight: 500 }}>
+                
+                    {breeds.find(b => b.id === pet.breedId)?.name || 'Mieszaniec'} • {pet.age} lat • {pet.color}
+                  </Typography>
+                </ContentBox>
+
+                <CardActions style={{ padding: 0, marginTop: 'auto' }}>
+                  <AdoptButton onClick={() => handleAdopt(pet.id)}>
+                    Przygarnij Psa
+                  </AdoptButton>
+                </CardActions>
+              </StyledCard>
+            </Grid>
+          );
+        })}
+      </Grid>
+      
+      {filteredPets.length === 0 && (
+        <Box textAlign="center" mt={5}>
+          <Typography variant="h5" color="textSecondary">
+            Brak piesków wybranej rasy 🐕
+          </Typography>
+        </Box>
+      )}
+    </div>
   );
 };

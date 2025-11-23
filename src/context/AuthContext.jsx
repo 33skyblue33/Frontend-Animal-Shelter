@@ -13,20 +13,17 @@ export const AuthProvider = ({ children }) => {
       const { accessToken, userId } = response.data;
       
       setToken(accessToken);
-      setUser({ id: userId, email }); // Możesz tu dodać dekodowanie JWT, by wyciągnąć rolę
+      setUser({ id: userId, email }); 
       localStorage.setItem('accessToken', accessToken);
       return true;
     } catch (error) {
       if (error.response) {
-        // Serwer odpowiedział kodem błędu (np. 400, 401, 500)
         console.error("Status:", error.response.status);
         console.error("Dane:", error.response.data);
         console.error("Nagłówki:", error.response.headers);
       } else if (error.request) {
-        // Zapytanie wyszło, ale brak odpowiedzi (To jest Twój Network Error)
         console.error("Zapytanie wyszło, ale serwer milczy (lub CORS/SSL blokuje):", error.request);
       } else {
-        // Coś innego poszło nie tak przy tworzeniu zapytania
         console.error("Błąd konfiguracji:", error.message);
       }
       console.error("Login failed", error);
