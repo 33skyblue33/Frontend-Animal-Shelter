@@ -4,6 +4,7 @@ import { AppBar, Toolbar, Typography, Button, Container, CssBaseline, Box } from
 import { styled, ThemeProvider } from '@mui/material/styles';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme'; 
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 
 const RootContainer = styled('div')(({ theme }) => ({
@@ -82,6 +83,9 @@ export const MainLayout = () => {
                 <NavButton component={Link} to="/adoptions">Adopcje</NavButton>
                 
                 <NavButton component={Link} to="/dotations" style={{ color: '#FFF8E7' }}>Dotacje ❤️</NavButton>
+                <NavButton component={Link} to="/profile" title="Mój Profil">
+                  <Box gap={1} display="flex" alignItems="center">Profil <AccountCircleIcon /></Box>
+                </NavButton>
                 
                 <NavButton onClick={handleLogout} style={{ backgroundColor: '#FF6B6B' }}>Wyloguj</NavButton>
               </>

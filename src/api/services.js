@@ -6,6 +6,12 @@ export const AuthService = {
   logout: () => apiClient.post('/auth/logout'),
 };
 
+export const UserService = {
+  getById: (id) => apiClient.get(`/user/${id}`),
+  update: (id, data) => apiClient.put(`/user/${id}`, data),
+  delete: (id) => apiClient.delete(`/user/${id}`),
+};
+
 export const PetService = {
   getAll: () => apiClient.get('/pet'),
   getById: (id) => apiClient.get(`/pet/${id}`),

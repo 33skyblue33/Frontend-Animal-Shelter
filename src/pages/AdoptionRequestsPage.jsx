@@ -1,21 +1,76 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Typography } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Typography, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { AdoptionService } from '../api/services';
 
-const PageHeader = styled(Typography)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
+// --- Styled Components ---
+const PageContainer = styled(Box)(({ theme }) => ({
+  fontFamily: "'Fredoka', sans-serif",
 }));
 
-const StatusChip = styled(Chip)(({ status, theme }) => {
-  let color = theme.palette.default;
-  if (status === 1) color = theme.palette.success.main; 
-  if (status === 2) color = theme.palette.error.main;
-  
-  return {
-    backgroundColor: color,
+const PageHeader = styled(Typography)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+  fontWeight: 700,
+  color: '#2D3436',
+  textAlign: 'center'
+}));
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: 24,
+  boxShadow: '0 8px 16px rgba(0,0,0,0.05)',
+  border: '2px solid #F0F0F0',
+  overflow: 'hidden'
+}));
+
+const StyledTableHead = styled(TableHead)(({ theme }) => ({
+  backgroundColor: '#4FD1C5', // Morski nagłówek
+  '& th': {
     color: '#fff',
-    fontWeight: 'bold'
+    fontWeight: 700,
+    fontSize: '1rem',
+    fontFamily: "'Fredoka', sans-serif",
+  }
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: '#FFF8E7', // Co drugi wiersz kremowy
+  },
+  '&:hover': {
+    backgroundColor: '#f5f5f5',
+  },
+  '&:last-child td, &:last-child th': {
+    border: 0,
+  },
+}));
+
+// --- Logika kolorów wg Twojego Enuma ---
+const StyledChip = styled(Chip)(({ statuscode, theme }) => {
+  let bgColor = '#E0E0E0';
+  let textColor = '#555';
+
+  // C# Enum: Accepted = 0
+  if (statuscode === 0) { 
+    bgColor = '#2ECC71'; // Zielony
+    textColor = '#fff';
+  } 
+  // C# Enum: InProgress = 1
+  else if (statuscode === 1) { 
+    bgColor = '#FFC048'; // Żółty/Pomarańczowy
+    textColor = '#fff';
+  } 
+  // C# Enum: Rejected = 2
+  else if (statuscode === 2) { 
+    bgColor = '#FF6B6B'; // Czerwony
+    textColor = '#fff';
+  }
+
+  return {
+    backgroundColor: bgColor,
+    color: textColor,
+    fontWeight: 'bold',
+    borderRadius: 8,
+    fontFamily: "'Fredoka', sans-serif",
   };
 });
 
@@ -35,40 +90,64 @@ export const AdoptionRequestsPage = () => {
   }, []);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
+    if(!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('pl-PL');
+  };
+
+  // --- MAPOWANIE NAZW WG TWOJEGO ENUMA ---
+  const getStatusLabel = (status) => {
+    switch(status) {
+      case 0: return 'Zaakceptowany';       // Accepted
+      case 1: return 'Weryfikacja';         // InProgress
+      case 2: return 'Odrzucony';           // Rejected
+      default: return 'Nieznany';
+    }
   };
 
   return (
-    <div>
-      <PageHeader variant="h4">Wnioski Adopcyjne</PageHeader>
-      <TableContainer component={Paper}>
+    <PageContainer>
+      <PageHeader variant="h4">Wnioski Adopcyjne 📄</PageHeader>
+      
+      <StyledTableContainer component={Paper}>
         <Table>
-          <TableHead>
+          <StyledTableHead>
             <TableRow>
-              <TableCell>ID Wniosku</TableCell>
+              <TableCell>ID</TableCell>
               <TableCell>Data zgłoszenia</TableCell>
               <TableCell>ID Zwierzaka</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell align="center">Status</TableCell>
               <TableCell>Data rozpatrzenia</TableCell>
             </TableRow>
-          </TableHead>
+          </StyledTableHead>
           <TableBody>
             {requests.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>{row.id}</TableCell>
+              <StyledTableRow key={row.id}>
+                <TableCell style={{ fontWeight: 'bold' }}>#{row.id}</TableCell>
                 <TableCell>{formatDate(row.requestDate)}</TableCell>
                 <TableCell>{row.petId}</TableCell>
-                <TableCell>
-                  <StatusChip label={`Status: ${row.status}`} status={row.status} size="small" />
+                <TableCell align="center">
+                  <StyledChip 
+                    label={getStatusLabel(row.status)} 
+                    statuscode={row.status} 
+                    size="small" 
+                  />
                 </TableCell>
                 <TableCell>
                     {row.resolvedDate ? formatDate(row.resolvedDate) : '-'}
                 </TableCell>
-              </TableRow>
+              </StyledTableRow>
             ))}
+            
+            {requests.length === 0 && (
+               <TableRow>
+                 <TableCell colSpan={5} align="center" style={{ padding: 20 }}>
+                   Brak wniosków do wyświetlenia.
+                 </TableCell>
+               </TableRow>
+            )}
           </TableBody>
         </Table>
-      </TableContainer>
-    </div>
+      </StyledTableContainer>
+    </PageContainer>
   );
 };

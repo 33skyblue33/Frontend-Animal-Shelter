@@ -10,6 +10,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { PetsPage } from './pages/PetsPage';
 import { AdoptionRequestsPage } from './pages/AdoptionRequestsPage';
 import { DotationsPage } from './pages/DotationsPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -40,6 +41,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <AdoptionRequestsPage />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="profile" 
+              element={
+                <PrivateRoute>
+                  <ProfilePage />
                 </PrivateRoute>
               } 
             />
